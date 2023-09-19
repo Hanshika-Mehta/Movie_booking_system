@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+
+// user - movie - many to many - 1
+// user - booking - one to one - 2
+model User {
+  customer_id String  @id @default(auto()) @map("_id") @db.ObjectId 
+  customer_name String
+  email String 
+  phone_number String?
+  mode_of_payment String
+  code_no String?
+  userMovies UserMovie[]
+  booking Booking?
+}
+//
+
+// movie - booking - one to many - 3
+model Movie{
+  movie_id String @id @default(auto()) @map("_id") @db.ObjectId
+  movie_name String
+  year String
+  duration  String
+  image String
+  userMovies UserMovie[] 
+  bookings Booking[] 
+}
+// user - movie - many to many - 1
+model UserMovie {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  user User @relation(fields: [userId], references: [customer_id])
+  userId String @db.ObjectId
+  movie Movie @relation(fields: [movieId], references: [movie_id])
+  movieId String @db.ObjectId
+  //it should be uniques as 
+  @@unique([userId, movieId])
+}
+
+
+
+// user - booking - one to one - 2
+// movie - booking - one to many - 3
+model Booking {
+  booking_id Int @id  @map("_id")
+  movie Movie @relation(fields: [movieId], references: [movie_id])
+  movieId String @db.ObjectId
+  user User @relation(fields: [userId], references: [customer_id])
+  userId String @db.ObjectId @unique
+  price Int?
+}
